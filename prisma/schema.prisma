@@ -1,0 +1,23 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model ApolloPerson {
+  apolloPersonId String    @id
+  email          String
+  firstName      String
+  lastName       String?
+  title          String?
+  linkedinUrl    String?
+  organization   String?
+  details        Json?
+  emailStatus    String // 'verified', 'unverified'
+  status         String // 'prospect', 'email_sent', 'rejected', 'deal_done', 'no_reply'
+  mailCount      Int       @default(0)
+  lastMailedAt   DateTime?
+  enrichedAt     DateTime  @default(now())
+}
