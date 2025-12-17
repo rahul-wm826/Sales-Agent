@@ -1,12 +1,10 @@
 import { ChatOpenAI } from "@langchain/openai";
 import { configDotenv } from "dotenv";
-import { PersonDBSchema, PersonStatus } from "../schema/personDBSchema";
+import { PersonDBSchema } from "../schema/personDBSchema";
 import z from "zod";
 import { EnrichDataType } from "../schema/enrichSchema";
 import { SystemMessage, HumanMessage } from "langchain";
 import { enqueueGenerateEmail } from "../queue/generateEmail.producer";
-import { prisma } from "../DB/prisma";
-import { generateEmailQueue } from "../queue/generateEmail.queue";
 
 configDotenv();
 
@@ -16,7 +14,7 @@ export async function processAndSendEmail(people: z.infer<typeof PersonDBSchema>
     for (const person of people) {
         if (person.emailStatus === "verified") {
             verifiedCount++;
-            await enqueueGenerateEmail({ personId: person.apolloPersonId });
+            await enqueueGenerateEmail(person.apolloPersonId);
             // await prisma.apolloPerson.update({
             //     where: { apolloPersonId: person.apolloPersonId },
             //     data: { status: PersonStatus.emailQueued }

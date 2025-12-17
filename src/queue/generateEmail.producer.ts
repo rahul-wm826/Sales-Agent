@@ -1,14 +1,14 @@
 import { generateEmailQueue } from "./generateEmail.queue";
 
 export async function enqueueGenerateEmail(
-    payload: { personId: string },
+    personId: string,
     delayMs = 0
 ) {
     await generateEmailQueue.add(
         "generate-email",
-        payload,
+        { personId },
         {
-            // jobId: `email_${payload.personId}`,
+            jobId: `gen_email_${personId}`,
             delay: delayMs,
             attempts: 2,
             backoff: {

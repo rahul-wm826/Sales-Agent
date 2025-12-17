@@ -7,7 +7,7 @@ datasource db {
 }
 
 model ApolloPerson {
-  apolloPersonId String    @id
+  apolloPersonId String       @id
   email          String
   firstName      String
   lastName       String?
@@ -16,10 +16,10 @@ model ApolloPerson {
   organization   String?
   details        Json?
   emailStatus    String // 'verified', 'unverified'
-  status         String    @default("prospect") // description written below
-  mailCount      Int       @default(0)
+  status         PersonStatus @default(prospect)
+  mailCount      Int          @default(0)
   lastMailedAt   DateTime?
-  enrichedAt     DateTime  @default(now())
+  enrichedAt     DateTime     @default(now())
 
   emails Email[]
 
@@ -27,19 +27,20 @@ model ApolloPerson {
   @@index([status])
 }
 
-// ApolloPerson.status
-// 'prospect'           // Email available, not contacted yet
-// 'email_queued'       // Email generation or send job queued
-// 'email_sent'         // At least one email sent
-// 'followup_scheduled' // Waiting for next follow-up
-// 'awaiting_reply'     // Email sent, waiting for response
-// 'replied'            // Client replied (positive or neutral)
-// 'qualified'          // Conversation going well, real interest
-// 'not_interested'     // Explicit rejection from client
-// 'no_reply'           // Follow-ups exhausted, no response
-// 'deal_won'           // Client converted
-// 'deal_lost'          // Conversation happened but failed
-// 'unsubscribed'       // Opted out / requested no contact
+enum PersonStatus {
+  prospect // Email available, not contacted yet
+  emailQueued // Email generation or send job queued
+  emailSent // At least one email sent
+  followUpSent // Waiting for next follow-up
+  awaitingReply // Email sent, waiting for response
+  replied // Client replied (positive or neutral)
+  qualified // Conversation going well, real interest
+  notInterested // Explicit rejection from client
+  noReply // Follow-ups exhausted, no response
+  dealWon // Client converted
+  dealLost // Conversation happened but failed
+  unsubscribed // Opted out / requested no contact
+}
 
 model Email {
   id String @id @default(cuid())
@@ -47,10 +48,29 @@ model Email {
   personId String
   person   ApolloPerson @relation(fields: [personId], references: [apolloPersonId], onDelete: Cascade)
 
+  direction EmailDirection
+
   subject     String
   htmlContent String
-  status      String   @default("draft") // 'draft', 'sent', 'failed'
-  sentAt      DateTime @default(now())
+
+  status     EmailStatus @default(draft)
+  sentAt     DateTime?
+  receivedAt DateTime?
+
+  followUpStep Int?
+
+  createdAt DateTime @default(now())
 
   @@index([personId])
+}
+
+enum EmailDirection {
+  outbound
+  inbound
+}
+
+enum EmailStatus {
+  draft
+  sent
+  failed
 }

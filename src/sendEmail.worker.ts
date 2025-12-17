@@ -2,7 +2,8 @@ import { Job, Worker } from "bullmq";
 import { prisma } from "./DB/prisma";
 import { connection } from "./queue/redis";
 import { sendEmail } from "./email/sendEmail";
-import { EmailStatus, PersonStatus } from "./schema/personDBSchema";
+import { EmailStatus, PersonStatus } from "@prisma/client";
+import { enqueueGenerateEmail } from "./queue/generateEmail.producer";
 
 export const sendEmailWorker = new Worker(
     "send-email-queue",

@@ -1,8 +1,9 @@
 import { Request, Response, Router } from "express";
 import { prisma } from "../DB/prisma";
 import { processAndSendEmail } from "../email/generateEmail";
-import { PersonDBSchema, PersonStatus } from "../schema/personDBSchema";
+import { PersonDBSchema } from "../schema/personDBSchema";
 import z from "zod";
+import { PersonStatus } from "@prisma/client";
 
 const router = Router();
 

@@ -1,10 +1,11 @@
 import { generateEmail } from "./email/generateEmail";
-import { EmailStatus, PersonDBSchema } from "./schema/personDBSchema";
+import { PersonDBSchema } from "./schema/personDBSchema";
 import z from "zod";
 import { Worker } from "bullmq";
 import { prisma } from "./DB/prisma";
 import { enqueueSendEmail } from "./queue/sendEmail.producer";
 import { connection } from "./queue/redis";
+import { EmailDirection, EmailStatus } from "@prisma/client";
 
 export const generateEmailWorker = new Worker(
     "generate-email-queue",
@@ -36,10 +37,11 @@ export const generateEmailWorker = new Worker(
                     personId: person.apolloPersonId,
                     subject: emailContent.subject,
                     htmlContent: emailContent.htmlContent,
+                    direction: EmailDirection.outbound,
                 },
             });
 
-            await enqueueSendEmail({ emailId: email.id });
+            await enqueueSendEmail(email.id);
         }
         catch (error) {
             console.error("Error generating email", error);

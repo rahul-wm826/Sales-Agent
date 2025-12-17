@@ -5,6 +5,7 @@ import { emailRouter } from "./APIs/email";
 import "./generateEmail.worker";
 import "./sendEmail.worker";
 import cors from "cors";
+import updateWorkflow from "./workflow/updateWorkflow";
 
 const app = express();
 app.use(express.json());
@@ -13,6 +14,8 @@ app.use(cors());
 app.use("/api/people", peopleRouter);
 app.use("/api/enrich", enrichRouter);
 app.use("/api/email", emailRouter);
+
+updateWorkflow();
 
 app.listen(3000, () => {
     console.log("Server running on: http://localhost:3000");
