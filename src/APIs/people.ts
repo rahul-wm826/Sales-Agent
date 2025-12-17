@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response, Router } from "express";
 import { mockPeople } from "../apollo/peopleApiSearch";
-import { PeopleParams, PeopleParamsType, PeopleType } from "../apollo/schema/peopleSchema";
+import { PeopleParams, PeopleParamsType, PeopleType } from "../schema/peopleSchema";
 import parse from "../middleware/parse";
 
 const router = Router();

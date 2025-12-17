@@ -1,5 +1,5 @@
 import axios from "axios";
-import { EnrichParamsType, EnrichDataType, BulkEnrichParamsType, BulkEnrichDetailsType, BulkEnrichDataType } from "./schema/enrichSchema";
+import { EnrichParamsType, EnrichDataType, BulkEnrichParamsType, BulkEnrichDetailsType, BulkEnrichDataType } from "../schema/enrichSchema";
 import { configDotenv } from "dotenv";
 
 configDotenv();

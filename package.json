@@ -5,7 +5,10 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
+    "start:worker": "node dist/worker.js",
     "dev": "nodemon --watch src --exec ts-node src/index.ts",
+    "dev:sendEmailWorker": "nodemon --watch src --exec ts-node src/sendEmail.worker.ts",
+    "dev:generateEmailWorker": "nodemon --watch src --exec ts-node src/generateEmail.worker.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -13,12 +16,17 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@langchain/langgraph": "^1.0.5",
+    "@langchain/openai": "^1.2.0",
     "@prisma/adapter-pg": "^7.1.0",
     "@prisma/client": "^7.1.0",
     "axios": "^1.13.2",
+    "bullmq": "^5.66.1",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
+    "ioredis": "^5.8.2",
+    "langchain": "^1.2.1",
     "pg": "^8.16.3",
     "prisma": "^7.1.0",
     "zod": "^4.1.13"

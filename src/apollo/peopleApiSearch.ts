@@ -1,5 +1,5 @@
 import axios from "axios";
-import { PeopleDataType, PeopleParamsType } from "./schema/peopleSchema";
+import { PeopleDataType, PeopleParamsType } from "../schema/peopleSchema";
 import { configDotenv } from "dotenv";
 
 configDotenv();

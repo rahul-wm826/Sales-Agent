@@ -3,7 +3,7 @@ import { mockBulkEnrich, mockEnrich } from "../apollo/peopleEnrichment";
 import parse from "../middleware/parse";
 import { z } from "zod";
 import { prisma } from "../DB/prisma";
-import { EnrichDataType } from "../apollo/schema/enrichSchema";
+import { EnrichDataType } from "../schema/enrichSchema";
 
 const router = Router();
 

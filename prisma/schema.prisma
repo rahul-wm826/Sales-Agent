@@ -16,8 +16,41 @@ model ApolloPerson {
   organization   String?
   details        Json?
   emailStatus    String // 'verified', 'unverified'
-  status         String // 'prospect', 'email_sent', 'rejected', 'deal_done', 'no_reply'
+  status         String    @default("prospect") // description written below
   mailCount      Int       @default(0)
   lastMailedAt   DateTime?
   enrichedAt     DateTime  @default(now())
+
+  emails Email[]
+
+  @@index([email])
+  @@index([status])
+}
+
+// ApolloPerson.status
+// 'prospect'           // Email available, not contacted yet
+// 'email_queued'       // Email generation or send job queued
+// 'email_sent'         // At least one email sent
+// 'followup_scheduled' // Waiting for next follow-up
+// 'awaiting_reply'     // Email sent, waiting for response
+// 'replied'            // Client replied (positive or neutral)
+// 'qualified'          // Conversation going well, real interest
+// 'not_interested'     // Explicit rejection from client
+// 'no_reply'           // Follow-ups exhausted, no response
+// 'deal_won'           // Client converted
+// 'deal_lost'          // Conversation happened but failed
+// 'unsubscribed'       // Opted out / requested no contact
+
+model Email {
+  id String @id @default(cuid())
+
+  personId String
+  person   ApolloPerson @relation(fields: [personId], references: [apolloPersonId], onDelete: Cascade)
+
+  subject     String
+  htmlContent String
+  status      String   @default("draft") // 'draft', 'sent', 'failed'
+  sentAt      DateTime @default(now())
+
+  @@index([personId])
 }
