@@ -73,4 +73,5 @@ enum EmailStatus {
   draft
   sent
   failed
+  received
 }

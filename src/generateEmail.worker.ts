@@ -30,8 +30,7 @@ export const generateEmailWorker = new Worker(
                 return;
             }
 
-            const emailContent = await generateEmail(person);
-
+            const emailContent = await generateEmail(person, job.data.responding);
             const email = await prisma.email.create({
                 data: {
                     personId: person.apolloPersonId,

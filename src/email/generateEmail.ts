@@ -5,6 +5,8 @@ import z from "zod";
 import { EnrichDataType } from "../schema/enrichSchema";
 import { SystemMessage, HumanMessage } from "langchain";
 import { enqueueGenerateEmail } from "../queue/generateEmail.producer";
+import { EmailDirection } from "@prisma/client";
+import { prisma } from "../DB/prisma";
 
 configDotenv();
 
@@ -47,14 +49,13 @@ export function getLlm() {
     return llm;
 }
 
-export async function generateEmail(person: z.infer<typeof PersonDBSchema>): Promise<{
+export async function generateEmail(person: z.infer<typeof PersonDBSchema>, responding: boolean): Promise<{
     subject: string;
     htmlContent: string;
 }> {
     try {
         let enrichedData: EnrichDataType['person'] | null = null;
         if (person.details) {
-            console.log(person.details);
             enrichedData = person.details as EnrichDataType['person'];
         }
         const relevantData = {
@@ -71,41 +72,94 @@ export async function generateEmail(person: z.infer<typeof PersonDBSchema>): Pro
             headline: enrichedData?.headline,
         };
 
-        const messages = [
-            new SystemMessage(`
-                You are a professional email assistant. Your task is to write personalized, professional cold emails for potential clients using available lead data.  
+        let messages;
+        if (responding) {
+            const email = (await prisma.email.findMany({
+                where: {
+                    personId: person.apolloPersonId,
+                    direction: EmailDirection.inbound,
+                },
+                orderBy: {
+                    receivedAt: "desc",
+                },
+            }))[0];
 
-                Input may include:
-                - Person: name, title, role  
-                - Organization: name, website, industry, size, revenue  
-                - Social profiles: LinkedIn, Twitter, etc.  
-                - Recent funding, blog posts, news, technologies  
-                - Any other enrichment data available  
-                
-                Email rules:
-                1. Address the recipient by name and title if appropriate.  
-                2. Reference specific points about the organization, achievements, or initiatives; avoid generic statements.  
-                3. Explain how our AI web development services add value.  
-                4. Keep it concise: 3–5 short paragraphs, professional and friendly.  
-                5. Include a clear call-to-action.  
-                6. Correct spelling and grammar.  
-                7. Use only the available information; do not invent data.  
-                
-                Additional instructions:
-                - Generate the **email subject line separately** and label it as 'subject'.
-                - Generate the **email body separately** and return it in **HTML format**, labeled as 'htmlContent'.
-                - The sender of the email is **Rahul Vishwakarma**, CEO of company **XYZ**.
-                - Output JSON in the exact format:
-                
-                {
-                  "subject": "<email subject line>",
-                  "htmlContent": "<email body in HTML>"
-                }
-            `),
-            new HumanMessage(`
-                ${JSON.stringify(relevantData)}
-            `)
-        ];
+            if (!email) {
+                throw new Error("Email not found");
+            }
+            messages = [
+                new SystemMessage(`
+                    You are a professional email assistant. Your task is to write personalized, professional cold emails for potential clients using available lead data.  
+
+                    Input may include:
+                    - Person: name, title, role  
+                    - Organization: name, website, industry, size, revenue  
+                    - Social profiles: LinkedIn, Twitter, etc.  
+                    - Recent funding, blog posts, news, technologies  
+                    - Any other enrichment data available  
+                    
+                    Email rules:
+                    1. Address the recipient by name and title if appropriate.  
+                    2. Reference specific points about the organization, achievements, or initiatives; avoid generic statements.  
+                    3. Explain how our AI web development services add value.  
+                    4. Keep it concise: 3–5 short paragraphs, professional and friendly.  
+                    5. Include a clear call-to-action.  
+                    6. Correct spelling and grammar.  
+                    7. Use only the available information; do not invent data.  
+                    
+                    Additional instructions:
+                    - Generate the **email subject line separately** and label it as 'subject'.
+                    - Generate the **email body separately** and return it in **HTML format**, labeled as 'htmlContent'.
+                    - The sender of the email is **Rahul Vishwakarma**, CEO of company **XYZ**.
+                    - Output JSON in the exact format:
+                    
+                    {
+                        "subject": "<email subject line>",
+                        "htmlContent": "<email body in HTML>"
+                    }
+                `),
+                new HumanMessage(`
+                    ${JSON.stringify(relevantData)}
+                `)
+            ];
+        }
+        else {
+            messages = [
+                new SystemMessage(`
+                    You are a professional email assistant. Your task is to write personalized, professional cold emails for potential clients using available lead data.  
+
+                    Input may include:
+                    - Person: name, title, role  
+                    - Organization: name, website, industry, size, revenue  
+                    - Social profiles: LinkedIn, Twitter, etc.  
+                    - Recent funding, blog posts, news, technologies  
+                    - Any other enrichment data available  
+                    
+                    Email rules:
+                    1. Address the recipient by name and title if appropriate.  
+                    2. Reference specific points about the organization, achievements, or initiatives; avoid generic statements.  
+                    3. Explain how our AI web development services add value.  
+                    4. Keep it concise: 3–5 short paragraphs, professional and friendly.  
+                    5. Include a clear call-to-action.  
+                    6. Correct spelling and grammar.  
+                    7. Use only the available information; do not invent data.  
+                    
+                    Additional instructions:
+                    - Generate the **email subject line separately** and label it as 'subject'.
+                    - Generate the **email body separately** and return it in **HTML format**, labeled as 'htmlContent'.
+                    - The sender of the email is **Rahul Vishwakarma**, CEO of company **XYZ**.
+                    - Output JSON in the exact format:
+                    
+                    {
+                        "subject": "<email subject line>",
+                        "htmlContent": "<email body in HTML>"
+                    }
+                `),
+                new HumanMessage(`
+                    ${JSON.stringify(relevantData)}
+                `)
+            ];
+        }
 
         const llm = getLlm().withStructuredOutput(z.object({
             subject: z.string(),

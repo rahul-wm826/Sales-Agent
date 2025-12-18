@@ -2,6 +2,7 @@ import { generateEmailQueue } from "./generateEmail.queue";
 
 export async function enqueueGenerateEmail(
     personId: string,
+    responding: boolean = false,
     delayMs = 0
 ) {
     await generateEmailQueue.add(
